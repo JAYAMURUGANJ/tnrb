@@ -92,10 +92,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(Icons.do_not_disturb_alt_sharp, size: 100),
+                      Icon(Icons.search_off_sharp, size: 100),
                       Text(
                         'No scan history available.',
-                        style: TextStyle(fontSize: 18),
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
                   ),
@@ -137,12 +137,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _sendDataToApi,
-        tooltip: 'Upload Data to API',
-        heroTag: 'exportToApiFAB', // Unique heroTag
-        icon: const Icon(Icons.cloud_sync_outlined),
-        label: const Text('Sync To db'),
+      floatingActionButton: Visibility(
+        visible: scannedVisitors.isNotEmpty,
+        child: FloatingActionButton.extended(
+          onPressed: _sendDataToApi,
+          tooltip: 'Upload Data to API',
+          heroTag: 'exportToApiFAB', // Unique heroTag
+          icon: const Icon(Icons.cloud_sync_outlined),
+          label: const Text('Sync To db'),
+        ),
       ),
     );
   }

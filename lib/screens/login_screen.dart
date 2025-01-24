@@ -17,10 +17,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController =
-      TextEditingController(text: defaultUsername);
-  final TextEditingController _passwordController =
-      TextEditingController(text: defaultPassword);
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late bool _isPasswordVisible;
   late String errorMessage;
@@ -82,42 +80,56 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Theme.of(context).secondaryHeaderColor,
-              Theme.of(context).secondaryHeaderColor,
-              Theme.of(context).primaryColor
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 10),
-                const LoginLogoWidget(),
-                const SizedBox(height: 30),
-                _buildUsernameField(),
-                const SizedBox(height: 10),
-                _buildPasswordField(),
-                const SizedBox(height: 20),
-                _buildLoginButton(context),
-                const SizedBox(height: 10),
-                const Spacer(),
-                const LoginFooter(),
-              ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white,
+                        Theme.of(context).secondaryHeaderColor,
+                        Theme.of(context).secondaryHeaderColor,
+                        Theme.of(context).primaryColor
+                      ],
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          const SizedBox(height: 10),
+                          const LoginLogoWidget(),
+                          const SizedBox(height: 30),
+                          _buildUsernameField(),
+                          const SizedBox(height: 10),
+                          _buildPasswordField(),
+                          const SizedBox(height: 20),
+                          _buildLoginButton(context),
+                          const SizedBox(height: 10),
+                          const Spacer(),
+                          const LoginFooter(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

@@ -23,13 +23,15 @@ class VisitorAdapter extends TypeAdapter<Visitor> {
       designation: fields[3] as String,
       gate: fields[4] as String?,
       deviceId: fields[5] as String?,
+      adultCount: fields[7] as String,
+      childCount: fields[8] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Visitor obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.eventsId)
       ..writeByte(1)
@@ -43,7 +45,11 @@ class VisitorAdapter extends TypeAdapter<Visitor> {
       ..writeByte(5)
       ..write(obj.deviceId)
       ..writeByte(6)
-      ..write(obj.entryDate);
+      ..write(obj.entryDate)
+      ..writeByte(7)
+      ..write(obj.adultCount)
+      ..writeByte(8)
+      ..write(obj.childCount);
   }
 
   @override

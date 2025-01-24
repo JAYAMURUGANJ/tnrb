@@ -25,6 +25,12 @@ class Visitor extends HiveObject {
   @HiveField(6)
   final String entryDate;
 
+  @HiveField(7)
+  final String adultCount;
+
+  @HiveField(8)
+  final String childCount;
+
   // Constructor with entryDate initialized to current time
   Visitor({
     required this.eventsId,
@@ -33,6 +39,8 @@ class Visitor extends HiveObject {
     required this.designation,
     this.gate,
     this.deviceId,
+    required this.adultCount,
+    required this.childCount,
   }) : entryDate = DateTime.now().toString();
 
   // Factory constructor to create an instance from JSON
@@ -44,6 +52,8 @@ class Visitor extends HiveObject {
       designation: json['designation'] ?? '',
       gate: json['gate'],
       deviceId: json['device_id'],
+      adultCount: json['adult_count'] ?? '0',
+      childCount: json['child_count'] ?? '0',
     );
   }
 
@@ -57,6 +67,8 @@ class Visitor extends HiveObject {
       'gate': gate ?? '',
       'device_id': deviceId ?? '',
       'entry_date': entryDate,
+      'adult_count': adultCount,
+      'child_count': childCount
     };
   }
 }

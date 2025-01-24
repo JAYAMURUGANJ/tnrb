@@ -29,7 +29,7 @@ class KChoiceChip extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isSelected ? Colors.black : Colors.grey,
-                    width: 2,
+                    width: isSelected ? 4 : 2,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -40,8 +40,8 @@ class KChoiceChip extends StatelessWidget {
                   ),
                   child: Image.asset(
                     isSelected ? Assets.open : Assets.close,
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                   ),
                 ),
               ),
@@ -51,6 +51,7 @@ class KChoiceChip extends StatelessWidget {
                 style: TextStyle(
                   color: isSelected ? Colors.black : Colors.grey,
                   fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
               ),
             ],

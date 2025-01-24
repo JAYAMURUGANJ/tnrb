@@ -29,7 +29,6 @@ Future<bool> sendDataToAPI(BuildContext context, List<Visitor> visitors) async {
     'Cookie':
         'PHPSESSID=obfnliq4c47tdsr2or44qtu2gh' // Replace with your session ID
   };
-  debugPrint("am here");
 
   var data = json.encode(
     visitors.map((visitor) => visitor.toJson()).toList(),

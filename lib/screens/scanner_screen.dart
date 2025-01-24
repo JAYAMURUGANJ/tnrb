@@ -30,6 +30,8 @@ class _ScannerAndResultScreenState extends State<ScannerAndResultScreen>
   bool isSuccess = false; // Track if the data was saved successfully
   String apiResponseMessage = '';
   bool localSaveSuccess = false;
+  String selectedAdults = '0';
+  String selectedChildren = '0';
 
   // Function to parse and validate the scanned QR URL
   bool validateAndParseQR(String url) {
@@ -64,23 +66,27 @@ class _ScannerAndResultScreenState extends State<ScannerAndResultScreen>
       apiResponseMessage = 'Saving data...';
     });
 
-    Visitor visitor = Visitor.fromJson(parsedJson!);
+    // Create a new map with the original parsed data and add adult/children counts
+    Map<String, String> visitorData = Map.from(parsedJson!);
+    visitorData['adult_count'] = selectedAdults;
+    visitorData['child_count'] = selectedChildren;
 
-    // Open a Hive box for storing scanned data
+    // Create the Visitor object using the updated map
+    Visitor visitor = Visitor.fromJson(visitorData);
+
+    // Print visitor data to verify
+    debugPrint('Visitor data: ${visitor.toJson()}');
+
     var box = await Hive.openBox('scannedDataBox');
 
     try {
-      // Add the scanned data to the Hive box
-      await box.add(visitor); // Adds the Visitor object to Hive
-
-      // Mark save as success
+      await box.add(visitor);
       localSaveSuccess = true;
     } catch (e) {
       debugPrint('Error saving data locally to Hive: $e');
       localSaveSuccess = false;
     }
 
-    // Send data to the API
     await sendDataToAPI(context, [visitor]).then((isApiSuccess) {
       setState(() {
         isSuccess = isApiSuccess && localSaveSuccess;
@@ -102,6 +108,8 @@ class _ScannerAndResultScreenState extends State<ScannerAndResultScreen>
 
   void _onScanAgainPressed() {
     setState(() {
+      selectedAdults = '0';
+      selectedChildren = '0';
       localSaveSuccess = false;
       isValidQR = false;
       parsedJson = null;
@@ -143,106 +151,199 @@ class _ScannerAndResultScreenState extends State<ScannerAndResultScreen>
       body: isSavingData
           ? const Center(child: CircularProgressIndicator())
           : isValidQR && parsedJson != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    spacing: 8,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        'Visitor Info',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.displaySmall,
-                      ),
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(
-                            color: Colors.black,
-                            width: 2,
+              ? SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      spacing: 5,
+                      children: [
+                        SizedBox(height: 15),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(
+                              color: Colors.grey,
+                              width: 2,
+                            ),
                           ),
-                        ),
-                        elevation: 5,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          elevation: 5,
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 5,
                             children: [
-                              Image.asset(
-                                Assets.logo,
-                                width: 150,
-                                height: 150,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const SizedBox(height: 10),
-                                  Text('Unique ID: ${parsedJson!['unique_id']}',
-                                      style: const TextStyle(fontSize: 18)),
-                                  Text('Name: ${parsedJson!['name']}',
-                                      maxLines: 2,
-                                      style: const TextStyle(fontSize: 18)),
-                                  if (parsedJson!['designation']?.isNotEmpty ??
-                                      false)
-                                    Text(
-                                        'Designation: ${parsedJson!['designation']}',
-                                        maxLines: 2,
-                                        style: const TextStyle(fontSize: 18)),
+                                  Image.asset(
+                                    Assets.logo,
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                  Text(
+                                    'Visitor Info',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium,
+                                  ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (!isSuccess)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: Theme.of(context).primaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                              Divider(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text('ID: ${parsedJson!['unique_id']}',
+                                    style: const TextStyle(fontSize: 18)),
                               ),
-                            ),
-                            onPressed: saveScannedData,
-                            child: const Text(
-                              'Confirm Visitor',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      if (apiResponseMessage.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: isSuccess ? Colors.green : Colors.red,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isSuccess ? Icons.check_circle : Icons.error,
-                                color: Colors.white,
+                              Divider(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text('Name: ${parsedJson!['name']}',
+                                    maxLines: 3,
+                                    style: const TextStyle(fontSize: 18)),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
+                              Divider(),
+                              if (parsedJson!['designation']?.isNotEmpty ??
+                                  false)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Text(
+                                      'Designation: ${parsedJson!['designation']}',
+                                      maxLines: 4,
+                                      style: const TextStyle(fontSize: 18)),
+                                ),
+                              if (parsedJson!['designation']?.isNotEmpty ??
+                                  false)
+                                Divider(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Text(
-                                  apiResponseMessage,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
+                                  'No. of Adults:',
+                                  textAlign: TextAlign.left,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
                               ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Center(
+                                  child: Wrap(
+                                    spacing: 5,
+                                    children: List.generate(5, (index) {
+                                      return ChoiceChip(
+                                        showCheckmark: false,
+                                        label: Text((index + 1).toString()),
+                                        selected: selectedAdults ==
+                                            (index + 1).toString(),
+                                        onSelected: (bool selected) {
+                                          setState(() {
+                                            selectedAdults = selected
+                                                ? (index + 1).toString()
+                                                : 0.toString();
+                                          });
+                                        },
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ),
+                              Divider(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  'No. of Children:',
+                                  textAlign: TextAlign.left,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Center(
+                                  child: Wrap(
+                                    spacing: 8,
+                                    children: List.generate(5, (index) {
+                                      return ChoiceChip(
+                                        showCheckmark: false,
+                                        label: Text((index + 1).toString()),
+                                        selected: selectedChildren ==
+                                            (index + 1).toString(),
+                                        onSelected: (bool selected) {
+                                          setState(() {
+                                            selectedChildren = selected
+                                                ? (index + 1).toString()
+                                                : 0.toString();
+                                          });
+                                        },
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
                             ],
                           ),
                         ),
-                    ],
+                        if (!isSuccess) const SizedBox(height: 10),
+                        if (!isSuccess)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 60),
+                                backgroundColor: Theme.of(context).primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: saveScannedData,
+                              child: const Text(
+                                'Confirm Visitor',
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        if (apiResponseMessage.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSuccess ? Colors.green : Colors.redAccent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSuccess ? Icons.check_circle : Icons.error,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    apiResponseMessage,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 )
               : Stack(
@@ -256,8 +357,9 @@ class _ScannerAndResultScreenState extends State<ScannerAndResultScreen>
                         width: 250,
                         height: 250,
                         decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Colors.deepPurple, width: 2.0),
+                          border: Border.all(
+                              color: Theme.of(context).primaryColor,
+                              width: 3.0),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
